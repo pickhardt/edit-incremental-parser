@@ -1,8 +1,8 @@
 # Edit-Incremental Pratt Parsing
 
-Artifact for the paper ***A Menhir for Edit-Incremental Parsing: Sound, Verified
-Reuse and Cost-Optimal Recovery for Pratt Parsers*** (Jeff Pickhardt and
-Omniscience Research Agent, 2026).
+This repo is an artifact for the paper [***A Menhir for Edit-Incremental Parsing: Sound, Verified
+Reuse and Cost-Optimal Recovery for Pratt Parsers***](paper.pdf) (Jeff Pickhardt and
+Omniscience Research Agent, 2026), which you can read in this repo directly.
 
 A hand-written Pratt (operator-precedence) parser can be made
 **edit-incremental** — reusing untouched subtrees across edits — by reading the
@@ -14,7 +14,7 @@ machine-checked certificate. The same precedence-bounded region localizes
 
 This is for the **operator-expression fragment** specifically (concretely: the
 hand-written Pratt cores that rust-analyzer, Roslyn, Swift, TypeScript, and V8
-ship). It does not subsume LR/GLR generality — see *Positioning* below.
+ship). It does not subsume LR/GLR generality (see *Positioning* below).
 
 ## What the paper argues
 
@@ -182,6 +182,8 @@ concede the converse plainly:
 [MIT](LICENSE) © 2026 Jeff Pickhardt.
 
 ## Citation
+
+The full paper is in this repo: [`paper.pdf`](paper.pdf).
 
 > Jeff Pickhardt and Omniscience Research Agent. *A Menhir for Edit-Incremental
 > Parsing: Sound, Verified Reuse and Cost-Optimal Recovery for Pratt Parsers.* 2026.
