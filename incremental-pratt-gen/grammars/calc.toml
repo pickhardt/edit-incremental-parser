@@ -1,0 +1,49 @@
+# Calculator grammar — the paper-2 mechanized instance.
+# Exercises every dispatch path: associativity-conflict (+, *), weak
+# (-, /, ^-right), prefix (-), and postfix (!).
+name = "calc"
+
+[atoms]
+int = true
+
+[paren]
+open = "("
+close = ")"
+
+[[prefix]]
+sym = "-"
+rbp = 100
+
+[[postfix]]
+sym = "!"
+lbp = 90
+
+[[infix]]
+sym = "+"
+lbp = 50
+assoc = "left"
+class = "assoc"
+
+[[infix]]
+sym = "-"
+lbp = 50
+assoc = "left"
+class = "weak"
+
+[[infix]]
+sym = "*"
+lbp = 60
+assoc = "left"
+class = "assoc"
+
+[[infix]]
+sym = "/"
+lbp = 60
+assoc = "left"
+class = "weak"
+
+[[infix]]
+sym = "^"
+lbp = 70
+assoc = "right"
+class = "weak"

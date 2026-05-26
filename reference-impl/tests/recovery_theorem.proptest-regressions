@@ -1,0 +1,11 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 7d77eb2583a08bf40319855a5499cda6b1daa1f85ee88b1be97640accee0a53c # shrinks to src = "a[a]", seed = [188, 251, 207, 29, 103, 183, 25, 24, 97, 187, 223, 171, 42, 63, 216, 1, 48, 144, 99, 107, 156, 104, 175, 6, 244, 119, 156, 149, 209, 167, 86, 155]
+cc 0d6854884404ec31259de0cba47a3c2d2aecd3d4ddc602a6ddebc7261bb4404d # shrinks to src = "a[a[a]]", seed = [123, 254, 94, 82, 38, 241, 26, 65, 82, 232, 89, 207, 165, 129, 35, 21, 66, 116, 69, 119, 52, 41, 1, 215, 5, 6, 69, 216, 48, 174, 203, 232]
+cc b3fa52f81a1a0cd79473716d8b31636fcb992cc31d4e1eb2a8f380a7f59d5cb3 # shrinks to src = "(a + (a))", seed = [109, 91, 165, 55, 149, 19, 183, 112, 179, 93, 157, 31, 171, 123, 156, 108, 90, 186, 7, 30, 75, 145, 237, 172, 108, 227, 106, 110, 94, 245, 54, 216]
+cc f0ceec6f40782d89349cee560cabe854e62ea433af78431b63f5d91c8b8a92e3 # shrinks to src = "(a) + (a)", seed = [33, 76, 173, 28, 66, 86, 137, 94, 213, 55, 151, 145, 254, 94, 234, 220, 168, 182, 18, 146, 84, 122, 105, 208, 123, 28, 255, 74, 170, 35, 111, 62]
+cc ef49cebf6ad3ec5d74226a9739f1c285f4bd8672e75cb246d031bf0564f116e2 # shrinks to src = "((a))", seed = [213, 238, 75, 145, 171, 136, 25, 249, 223, 189, 113, 145, 163, 166, 107, 233, 35, 149, 22, 93, 242, 236, 138, 239, 154, 251, 127, 83, 229, 234, 97, 56]

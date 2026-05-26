@@ -1,0 +1,13 @@
+[package]
+name = "incremental-pratt-gen"
+version = "0.1.0"
+edition = "2021"
+description = "A 'Menhir for edit-incremental parsing' proof-of-concept generator"
+
+[[bin]]
+name = "gen"
+path = "src/main.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"

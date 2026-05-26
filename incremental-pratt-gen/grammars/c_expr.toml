@@ -1,0 +1,98 @@
+# C-style expression grammar — breadth check: identifiers + ints, prefix
+# negation and logical-not, multi-byte comparison/logical operators,
+# parens. Exercises longest-match tokenization (== vs =, && vs &, != vs !).
+name = "c_expr"
+
+[atoms]
+int = true
+ident = true
+
+[paren]
+open = "("
+close = ")"
+
+[[prefix]]
+sym = "-"
+rbp = 100
+
+[[prefix]]
+sym = "!"
+rbp = 100
+
+[[infix]]
+sym = "||"
+lbp = 10
+assoc = "left"
+class = "assoc"
+
+[[infix]]
+sym = "&&"
+lbp = 20
+assoc = "left"
+class = "assoc"
+
+[[infix]]
+sym = "=="
+lbp = 30
+assoc = "left"
+class = "weak"
+
+[[infix]]
+sym = "!="
+lbp = 30
+assoc = "left"
+class = "weak"
+
+[[infix]]
+sym = "<"
+lbp = 40
+assoc = "left"
+class = "weak"
+
+[[infix]]
+sym = ">"
+lbp = 40
+assoc = "left"
+class = "weak"
+
+[[infix]]
+sym = "<="
+lbp = 40
+assoc = "left"
+class = "weak"
+
+[[infix]]
+sym = ">="
+lbp = 40
+assoc = "left"
+class = "weak"
+
+[[infix]]
+sym = "+"
+lbp = 50
+assoc = "left"
+class = "assoc"
+
+[[infix]]
+sym = "-"
+lbp = 50
+assoc = "left"
+class = "weak"
+
+[[infix]]
+sym = "*"
+lbp = 60
+assoc = "left"
+class = "assoc"
+
+[[infix]]
+sym = "/"
+lbp = 60
+assoc = "left"
+class = "weak"
+
+[[infix]]
+sym = "%"
+lbp = 60
+assoc = "left"
+class = "weak"

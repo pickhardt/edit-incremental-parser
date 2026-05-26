@@ -1,0 +1,69 @@
+# Statement-language grammar — exercises a CUSTOM, generated statement
+# front-end (not the default `let`/expr/block). Declarations (`def`),
+# print statements, lets, nested blocks, and expression statements all sit
+# above the same generated Pratt expression core. The point: the statement
+# grammar is a parameter of the spec, emitted as a table the grammar-
+# independent host interpreter walks — "grammar in, incremental front-end out"
+# for the statement layer as well as the expression layer.
+#
+# All statement terminators are `;` / `}` (punctuation disjoint from the
+# expression tokens), so the embedded-expression scan stays sound.
+name = "stmt_lang"
+
+[atoms]
+int = true
+ident = true
+
+[paren]
+open = "("
+close = ")"
+
+[[prefix]]
+sym = "-"
+rbp = 100
+
+[[infix]]
+sym = "<"
+lbp = 40
+assoc = "left"
+class = "weak"
+
+[[infix]]
+sym = "+"
+lbp = 50
+assoc = "left"
+class = "assoc"
+
+[[infix]]
+sym = "-"
+lbp = 50
+assoc = "left"
+class = "weak"
+
+[[infix]]
+sym = "*"
+lbp = 60
+assoc = "left"
+class = "assoc"
+
+[host]
+start = "program"
+keywords = ["let", "print", "def"]
+
+[[host.prod]]
+name = "program"
+alts = ["stmt*"]
+
+[[host.prod]]
+name = "stmt"
+alts = [
+  "'let' ident '=' expr ';'",
+  "'print' expr ';'",
+  "'def' ident block",
+  "block",
+  "expr ';'",
+]
+
+[[host.prod]]
+name = "block"
+alts = ["'{' stmt* '}'"]

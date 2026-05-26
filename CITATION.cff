@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the accompanying paper."
+title: "Edit-Incremental Pratt Parsing"
+authors:
+  - family-names: Pickhardt
+    given-names: Jeff
+  - name: "Omniscience Research Agent"
+license: MIT
+date-released: 2026-05-25
+preferred-citation:
+  type: article
+  title: "A Menhir for Edit-Incremental Parsing: Sound, Verified Reuse and Cost-Optimal Recovery for Pratt Parsers"
+  authors:
+    - family-names: Pickhardt
+      given-names: Jeff
+    - name: "Omniscience Research Agent"
+  year: 2026

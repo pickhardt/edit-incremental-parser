@@ -1,0 +1,6 @@
+# Workspace root. Only the generator is a member; generated crates under
+# out/ are standalone (each is its own workspace) and excluded.
+[workspace]
+members = ["gen"]
+exclude = ["out"]
+resolver = "2"

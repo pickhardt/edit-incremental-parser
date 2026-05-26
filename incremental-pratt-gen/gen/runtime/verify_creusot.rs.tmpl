@@ -1,0 +1,217 @@
+//! GENERATED Creusot unbounded certificate for grammar `/*@GRAMMAR@*/`.
+//!
+//! The four-part precedence-bounded reuse predicate (Definition 3.3) with
+//! Creusot contracts. `cargo creusot` translates this to Why3 and discharges
+//! the verification conditions via SMT (Z3 / Alt-Ergo), proving the
+//! operational predicate equals its declarative specification over `Seq<u8>`
+//! of ANY length — the unbounded counterpart of the Kani harnesses.
+//!
+//! The macros are no-ops under plain `cargo build`/`test`; only `cargo
+//! creusot` activates them. The only grammar-specific pieces are
+//! `lbp_of_byte_logic` and the operational `next_token_lbp` (condition 4),
+//! specialised by the generator to this grammar's single-byte operators.
+
+#![allow(unused)]
+
+use creusot_std::{
+    logic::{Int, Seq},
+    prelude::{ensures, logic, pearlite, requires, trusted, variant},
+};
+
+/// Cached subtree reuse metadata.
+#[derive(Clone, Copy)]
+#[cfg_attr(creusot, derive(creusot_std::model::DeepModel))]
+pub struct VNode {
+    pub start: usize,
+    pub end: usize,
+    pub m_spine: u32,
+    pub stop_lbp: u32,
+}
+
+/// Replace `[start, start+removed)` with `added` bytes.
+#[derive(Clone, Copy)]
+#[cfg_attr(creusot, derive(creusot_std::model::DeepModel))]
+pub struct VEdit {
+    pub start: usize,
+    pub added: usize,
+    pub removed: usize,
+}
+
+// ---- Logic-level specification of Definition 3.3 -----------------------
+
+#[logic(open)]
+pub fn translate_logic(edit: VEdit, old_pos: Int) -> Option<Int> {
+    pearlite! {
+        if old_pos < edit.start@ {
+            Some(old_pos)
+        } else if old_pos >= edit.start@ + edit.removed@ {
+            Some(old_pos + edit.added@ - edit.removed@)
+        } else {
+            None
+        }
+    }
+}
+
+#[logic(open)]
+pub fn byte_at(src: Seq<u8>, pos: Int) -> Option<u8> {
+    pearlite! { if 0 <= pos && pos < src.len() { Some(src[pos]) } else { None } }
+}
+
+#[logic(open)]
+pub fn byte_at_opt(src: Seq<u8>, pos: Option<Int>) -> Option<u8> {
+    pearlite! { match pos { Some(p) => byte_at(src, p), None => None } }
+}
+
+/// Condition (1): two-sided precedence band.
+#[logic(open)]
+pub fn cond_precedence_band(n: VNode, m_new: u32) -> bool {
+    pearlite! { n.stop_lbp@ <= m_new@ && m_new@ < n.m_spine@ }
+}
+
+/// Condition (2): text-region disjointness.
+#[logic(open)]
+pub fn cond_disjoint_region(n: VNode, edit: VEdit) -> bool {
+    pearlite! { n.end@ <= edit.start@ || n.start@ >= edit.start@ + edit.removed@ }
+}
+
+/// Condition (3): tokenization-boundary agreement.
+#[logic(open)]
+pub fn cond_boundaries_match(n: VNode, edit: VEdit, old_src: Seq<u8>, new_src: Seq<u8>) -> bool {
+    pearlite! {
+        (n.start@ == 0
+            || byte_at(old_src, n.start@ - 1)
+                == byte_at_opt(new_src, translate_logic(edit, n.start@ - 1)))
+        && byte_at(old_src, n.end@)
+            == byte_at_opt(new_src, translate_logic(edit, n.end@))
+    }
+}
+
+/// Condition (4): next-token left-binding-power stability.
+#[logic(open)]
+pub fn cond_next_token_lbp(n: VNode, edit: VEdit, new_src: Seq<u8>) -> bool {
+    pearlite! {
+        if n.end@ < edit.start@ {
+            next_token_lbp_logic(new_src, n.end@) == n.stop_lbp@
+        } else if n.end@ >= edit.start@ + edit.removed@ {
+            next_token_lbp_logic(new_src, n.end@ + edit.added@ - edit.removed@) == n.stop_lbp@
+        } else {
+            false
+        }
+    }
+}
+
+// ---- Grammar-specialised next-token model (single-byte operators) ------
+
+/// Logic-level byte -> lbp for this grammar. Returns 0 (LBP_NONE) for any
+/// byte that is not an infix/postfix operator (atoms, parens, whitespace).
+#[logic(open)]
+pub fn lbp_of_byte_logic(b: u8) -> Int {
+    pearlite! {
+        /*@LBP_OF_BYTE_LOGIC@*/
+    }
+}
+
+/// Logic-level next-token-lbp: skip whitespace from `pos`, return the lbp
+/// of the first non-whitespace byte (0 past end-of-input).
+#[logic(open)]
+#[variant(src.len() - pos)]
+#[requires(0 <= pos)]
+pub fn next_token_lbp_logic(src: Seq<u8>, pos: Int) -> Int {
+    pearlite! {
+        if pos >= src.len() {
+            0
+        } else if src[pos] == 32u8 || src[pos] == 9u8 || src[pos] == 10u8 || src[pos] == 13u8 {
+            next_token_lbp_logic(src, pos + 1)
+        } else {
+            lbp_of_byte_logic(src[pos])
+        }
+    }
+}
+
+/// Operational next-token-lbp. `#[trusted]` to match its logic model: the
+/// byte-scanning loop's correspondence to `next_token_lbp_logic` is the
+/// single trust assumption (it mirrors the generated runtime lexer).
+#[trusted]
+#[requires(pos@ <= src@.len())]
+#[ensures(result@ == next_token_lbp_logic(src@, pos@))]
+pub fn next_token_lbp(src: &[u8], pos: usize) -> u32 {
+    let mut i = pos;
+    while i < src.len() {
+        let b = src[i];
+        match b {
+            b' ' | b'\t' | b'\n' | b'\r' => { i += 1; }
+            /*@NEXT_TOKEN_LBP_OP@*/
+            _ => return 0,
+        }
+    }
+    0
+}
+
+// ---- Operational primitives with contracts -----------------------------
+
+/// Translate an old-source position to its new-source position, or `None`
+/// if inside the edited region.
+#[requires(edit.start@ + edit.removed@ <= usize::MAX@)]
+#[requires(old_pos@ + edit.added@ <= usize::MAX@)]
+#[ensures(match result {
+    Some(p) => translate_logic(edit, old_pos@) == Some(p@),
+    None => translate_logic(edit, old_pos@) == None,
+})]
+pub fn translate_to_new(edit: VEdit, old_pos: usize) -> Option<usize> {
+    if old_pos < edit.start {
+        Some(old_pos)
+    } else if old_pos >= edit.start + edit.removed {
+        Some(old_pos + edit.added - edit.removed)
+    } else {
+        None
+    }
+}
+
+// ---- The predicate, with full contract ----------------------------------
+
+/// Definition 3.3: the four-part reuse predicate. Verified to equal the
+/// conjunction of the four declarative conditions for `Seq<u8>` of any
+/// length.
+#[requires(edit.start@ + edit.removed@ <= usize::MAX@)]
+#[requires(n.end@ + edit.added@ <= usize::MAX@)]
+#[requires(n.start@ <= n.end@)]
+#[requires(n.end@ + edit.added@ - edit.removed@ <= new_src@.len())]
+#[requires(edit.start@ + edit.added@ <= new_src@.len())]
+#[ensures(result == (
+    cond_precedence_band(n, m_new)
+    && cond_disjoint_region(n, edit)
+    && cond_boundaries_match(n, edit, old_src@, new_src@)
+    && cond_next_token_lbp(n, edit, new_src@)
+))]
+pub fn reuse_predicate(n: VNode, m_new: u32, edit: VEdit, old_src: &[u8], new_src: &[u8]) -> bool {
+    // (1) precedence band
+    if !(n.stop_lbp <= m_new && m_new < n.m_spine) {
+        return false;
+    }
+    // (2) text-region disjointness
+    if n.end > edit.start && n.start < edit.start + edit.removed {
+        return false;
+    }
+    // (3) tokenization-boundary agreement
+    if n.start > 0 {
+        let ob = old_src.get(n.start - 1).copied();
+        let nb = translate_to_new(edit, n.start - 1).and_then(|p| new_src.get(p).copied());
+        if ob != nb {
+            return false;
+        }
+    }
+    let oa = old_src.get(n.end).copied();
+    let na = translate_to_new(edit, n.end).and_then(|p| new_src.get(p).copied());
+    if oa != na {
+        return false;
+    }
+    // (4) next-token lbp stability
+    let new_end = match translate_to_new(edit, n.end) {
+        Some(p) => p,
+        None => return false,
+    };
+    if next_token_lbp(new_src, new_end) != n.stop_lbp {
+        return false;
+    }
+    true
+}

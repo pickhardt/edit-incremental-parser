@@ -1,0 +1,24 @@
+[package]
+name = "kani-poc"
+version = "0.1.0"
+edition = "2024"
+description = "Kani-verified proof-of-concept for edit-incremental Pratt parsing (Paper 2 §6 artifact)"
+
+[lib]
+name = "kani_poc"
+path = "src/lib.rs"
+
+[profile.release]
+debug = true
+
+[dependencies]
+# Creusot specification crate. Pinned to the same upstream commit that
+# `cargo-creusot` was built from (see README.md install instructions);
+# proc-macro outputs and verifier expectations are coupled to the version.
+creusot-std = { git = "https://github.com/creusot-rs/creusot", rev = "34e1aecf46060e9479b803a85476022eeeed4728" }
+
+[package.metadata.kani]
+flags = { default-unwind = "33" }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)'] }

@@ -1,0 +1,24 @@
+[package]
+name = "incremental_pratt_poc"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rustc-hash = "2"
+
+[features]
+# Mint stable per-node ids for identity-keyed incremental semantics
+# (see src/semantics.rs). Off by default so the §5-benchmarked hot parse
+# path pays no id-minting cost.
+node_id = []
+# O(log n) path-copy splice for edits inside an associativity-conflict chain
+# (see incremental.rs::try_splice_chain). Builds the node-span side table and
+# the splice fast path. Implies node_id. Off by default so the cited parser
+# is unchanged.
+chain_splice = ["node_id"]
+
+[dev-dependencies]
+proptest = "1"
+
+[profile.release]
+debug = true
